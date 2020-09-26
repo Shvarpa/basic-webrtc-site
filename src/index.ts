@@ -14,7 +14,7 @@ function playStream(videoElement: HTMLVideoElement, wsUrl: string, config: RTCCo
 
 	if (pc) pc.close();
 	pc = new RTCPeerConnection(config);
-	const onsdp = async (sdp) => {
+	const onsdp = async (sdp: RTCSessionDescriptionInit) => {
 		try {
 			await pc.setRemoteDescription(sdp);
 			let data = await pc.createAnswer();
@@ -24,7 +24,7 @@ function playStream(videoElement: HTMLVideoElement, wsUrl: string, config: RTCCo
 			if (reportError) reportError(err);
 		}
 	};
-	const onice = async (ice) => {
+	const onice = async (ice?: RTCIceCandidateInit) => {
 		try {
 			pc.addIceCandidate(new RTCIceCandidate(ice));
 		} catch (err) {
@@ -46,6 +46,7 @@ function playStream(videoElement: HTMLVideoElement, wsUrl: string, config: RTCCo
 			let { type, data } = JSON.parse(ev.data);
 			if (type == "sdp") onsdp(data);
 			else if (type == "ice") onice(data);
+			else throw new Error(`received unrecognized message type: ${type}`);
 		} catch (err) {
 			if (reportError) reportError(err);
 		}
@@ -54,14 +55,8 @@ function playStream(videoElement: HTMLVideoElement, wsUrl: string, config: RTCCo
 
 window.onload = () => {
 	let videoElement = document.getElementById("stream") as HTMLVideoElement;
-	var config: RTCConfiguration = {
-		iceServers: [
-			{
-				urls: "stun:stun.l.google.com:19302",
-			},
-		],
-	};
+	var config: RTCConfiguration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 	videoElement.autoplay = true;
 	videoElement.muted = true;
-	playStream(videoElement, "ws://127.0.0.1:57778/ws", config);
+	playStream(videoElement, `ws://${window.location.host}/ws`, config);
 };
