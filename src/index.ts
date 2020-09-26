@@ -1,3 +1,5 @@
+import "webrtc-adapter";
+
 let ws: WebSocket;
 let pc: RTCPeerConnection;
 
