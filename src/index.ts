@@ -56,6 +56,7 @@ class WebRTCStream {
 				if (this.reportError) this.reportError(err);
 				if (this._retry <= retries) {
 					console.log(`reconnection retry ${this._retry}/${retries}`);
+					this._retry += 1;
 					this.connect();
 				} else {
 					console.log(`stopping reconnection`);
